@@ -1,14 +1,16 @@
+BUILDER=go build -ldflags="-s -w"
+BIN_NAME=socket-dispatcher
+MAIN=cmd/main.go
+
 build:
 	go mod download
 	go mod vendor
-	env GOOS=linux go build -ldflags="-s -w" -o bin/cmd cmd/main.go
-	env GOOS=windows go build -ldflags="-s -w" -o bin/cmd.exe cmd/main.go
-
-configure:
-	brew install go --with-cc-common
+	env GOOS=linux $(BUILDER) -o bin/$(BIN_NAME)-linux $(MAIN)
+	env GOOS=windows $(BUILDER) -o bin/$(BIN_NAME)-windows.exe $(MAIN)
+	env GOOS=darwin $(BUILDER) -o bin/$(BIN_NAME)-mac $(MAIN)
 
 dev:
-	env GOOS=darwin go build -o bin/cmd cmd/main.go	
+	env GOOS=darwin $(BUILDER) -o bin/cmd cmd/main.go	
 
 .PHONY: watch
 watch: 
