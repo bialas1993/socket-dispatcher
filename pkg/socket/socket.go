@@ -7,10 +7,10 @@ import (
 )
 
 const (
-	connectionTypeTCP = "tcp"
-	connectionTypeUDP = "udp"
-	timeTimeout       = 5
-	hostPattern       = "127.0.0.1:%d"
+	connectionTypeTCP     = "tcp"
+	connectionTypeUDP     = "udp"
+	socketTimeoutDuration = time.Duration(5) * time.Second
+	hostPattern           = "127.0.0.1:%d"
 )
 
 type Socket interface {
@@ -30,7 +30,7 @@ func New(port uint) Socket {
 }
 
 func (s *socket) IsLocked() bool {
-	l, err := net.DialTimeout(connectionTypeTCP, fmt.Sprintf(hostPattern, s.port), time.Duration(timeTimeout)*time.Second)
+	l, err := net.DialTimeout(connectionTypeTCP, fmt.Sprintf(hostPattern, s.port), socketTimeoutDuration)
 	if err != nil {
 		return true
 	}
@@ -41,7 +41,7 @@ func (s *socket) IsLocked() bool {
 
 func (s *socket) Open() bool {
 	var err error
-	if s.listener, err = net.DialTimeout(connectionTypeTCP, fmt.Sprintf(hostPattern, s.port), time.Duration(timeTimeout)*time.Second); err != nil {
+	if s.listener, err = net.DialTimeout(connectionTypeTCP, fmt.Sprintf(hostPattern, s.port), socketTimeoutDuration); err != nil {
 		return false
 	}
 
