@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/astaxie/beego v1.11.1
+	github.com/cakturk/go-netstat v0.0.0-20190105131828-bf243ad24f23
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -16,6 +17,7 @@ require (
 	github.com/spf13/cobra v0.0.4 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
+	github.com/takama/daemon v0.11.0
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f // indirect
 	golang.org/x/net v0.0.0-20190520210107-018c4d40a106 // indirect
 	golang.org/x/sys v0.0.0-20190520201301-c432e742b0af // indirect
