@@ -1,4 +1,4 @@
-BUILDER=go build -ldflags="-s -w"
+BUILDER=CGO_ENABLED=1 go build -ldflags="-s -w"
 BIN_NAME=socket-dispatcher
 MAIN=cmd/main.go
 
@@ -18,4 +18,4 @@ watch:
 	fswatch -o ./cmd/**/*.go ./pkg/**/*.go ./internal/**/*.go | xargs -n1 -I{} make dev
 .PHONY: clean
 clean:
-	rm -rf ./bin ./vendor
+	rm -rf ./bin ./vendor data.db

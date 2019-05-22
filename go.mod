@@ -3,12 +3,15 @@ module gitlab.com/bialas1993/socket-dispatcher
 go 1.12
 
 require (
+	github.com/astaxie/beego v1.11.1
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
+	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/pelletier/go-toml v1.4.0 // indirect
 	github.com/russross/blackfriday v2.0.0+incompatible // indirect
+	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.4 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
