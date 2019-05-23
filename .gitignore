@@ -27,3 +27,4 @@ coverage.html
 bin/*
 !/bin/watch.sh
 data.db
+daemon

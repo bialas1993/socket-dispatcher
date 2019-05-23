@@ -1,0 +1,8 @@
+version: '3.6'
+
+services:
+    socket-dispatcher:
+        build: .
+        container_name: socket-dispatcher
+        volumes:
+            - ./:/go/src/github.com/bialas1993/socket-dispatcher

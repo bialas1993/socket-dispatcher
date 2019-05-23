@@ -1,21 +1,25 @@
-BUILDER=CGO_ENABLED=1 go build -ldflags="-s -w"
-BIN_NAME=socket-dispatcher
-MAIN=cmd/main.go
+default:
+	@echo "=============building Local API============="
+	docker build -f Dockerfile -t socket-dispatcher .
 
-build:
-	go mod download
-	go mod vendor
-	env GOOS=linux $(BUILDER) -o bin/$(BIN_NAME)-linux $(MAIN)
-	env GOOS=windows $(BUILDER) -o bin/$(BIN_NAME)-windows.exe $(MAIN)
-	env GOOS=darwin $(BUILDER) -o bin/$(BIN_NAME)-mac $(MAIN)
+up: default
+	@echo "=============starting api locally============="
+	docker-compose up -d
 
-dev:
-	env GOOS=darwin $(BUILDER) -o bin/cmd cmd/main.go	
+logs:
+	docker-compose logs -f
 
-.PHONY: watch
-watch: 
-	kill -9 $(ps aux | grep fswatch | grep -v grep | awk '{print $2}') 2>>/dev/null || echo "Prepare..."
-	fswatch -o ./cmd/**/*.go ./pkg/**/*.go ./internal/**/*.go | xargs -n1 -I{} make dev
-.PHONY: clean
-clean:
-	rm -rf ./bin ./vendor data.db
+down:
+	docker-compose down
+
+shell:
+	docker exec -it socket-dispatcher /bin/bash
+
+test:
+	go test -v -cover ./...
+
+clean: down
+	@echo "=============cleaning up============="
+	rm -f api
+	docker system prune -f
+	docker volume prune -f
