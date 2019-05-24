@@ -4,8 +4,7 @@ language: go
 go: '1.12'
 
 install:
-  - export GO111MODULE=on 
-  - make setup
+  - export GO111MODULE="on"
   - gem install fpm
   - npm install -g prettier
   - sudo apt-get update
