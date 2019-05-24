@@ -18,6 +18,9 @@ shell:
 test:
 	go test -v -cover ./...
 
+build:
+	go build -o ./bin/socket-dispatcher ./cmd/daemon/
+
 clean: down
 	@echo "=============cleaning up============="
 	rm -f api

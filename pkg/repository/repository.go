@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrorCanNotFindRecord   = errors.New("repository: can not find record.")
+	ErrorCanNotFindRecords  = errors.New("repository: can not find records.")
 	ErrorCanNotInsertRecord = errors.New("repository: can not insert record.")
 	ErrorCanNotUpdateRecord = errors.New("repository: can not update record.")
 )
@@ -21,15 +22,15 @@ func init() {
 	if err != nil {
 		log.Panic(err)
 	}
-	orm.RunSyncdb("default", false, true)
+	orm.RunSyncdb("default", false, false)
 
 }
 
 type Repository interface {
 	Insert(port int, hash string) bool
 	Update(socket *model.Socket) bool
-	FindSocket(hash string) (*model.Socket, error)
-	FindPorts(start, end int) ([]*model.Socket, error)
+	FindSocketHash(hash string) (*model.Socket, error)
+	FindSocketPorts(start, end int) ([]*model.Socket, error)
 }
 
 type repo struct {
@@ -37,8 +38,6 @@ type repo struct {
 }
 
 func New() Repository {
-	orm.Debug = false
-
 	return &repo{orm.NewOrm()}
 }
 
@@ -50,7 +49,7 @@ func (r *repo) Insert(port int, hash string) bool {
 	return true
 }
 
-func (r *repo) FindSocket(hash string) (*model.Socket, error) {
+func (r *repo) FindSocketHash(hash string) (*model.Socket, error) {
 	socket := model.Socket{Hash: hash}
 	// todo: change to read or create
 	if err := r.db.Read(&socket, "hash"); err != nil {
@@ -62,21 +61,21 @@ func (r *repo) FindSocket(hash string) (*model.Socket, error) {
 	return &socket, nil
 }
 
-func (r *repo) FindPorts(start, end int) ([]*model.Socket, error) {
-	// r.db.QueryTable("socket").Filter()
+func (r *repo) FindSocketPorts(start, end int) ([]*model.Socket, error) {
+	var data []*model.Socket
+	var ports []interface{}
 
-	// qs := r.db.QueryTable(&model.Socket{})
+	qs := r.db.QueryTable(&model.Socket{})
 
-	// qs.Filter("socket__port__in", range(start, end)...)
-	// condition := orm.NewCondition()
+	for i := start; i <= end; i++ {
+		ports = append(ports, i)
+	}
 
-	// condition.And("socket__port__gte", start).And("socket__port__lte", end)
-	//	cond := orm.NewCondition()
-	//	cond1 := cond.And("profile__isnull", false).AndNot("status__in", 1).Or("profile__age__gt", 2000)
-	//	//sql-> WHERE T0.`profile_id` IS NOT NULL AND NOT T0.`Status` IN (?) OR T1.`age` >  2000
-	//	num, err := qs.SetCond(cond1).Count()
+	if _, err := qs.Filter("port__in", ports...).OrderBy("updated").All(&data); err != nil {
+		return nil, ErrorCanNotFindRecords
+	}
 
-	return nil, nil
+	return data, nil
 }
 
 func (r *repo) Update(socket *model.Socket) bool {

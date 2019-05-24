@@ -12,7 +12,22 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
+	"gitlab.com/bialas1993/socket-dispatcher/pkg/model"
+	"gitlab.com/bialas1993/socket-dispatcher/pkg/process"
 	"gitlab.com/bialas1993/socket-dispatcher/pkg/repository"
+	sock "gitlab.com/bialas1993/socket-dispatcher/pkg/socket"
+)
+
+const (
+	ExitNotSetVariabled = iota + 127
+	ExitCanNotRead
+	ExitCanNotUpdate
+)
+
+var (
+	branch string
+	debug  int
+	cfg    config
 )
 
 // Config for app
@@ -20,14 +35,9 @@ type config struct {
 	SocketDispatcherPorts string `env:"SOCKET_DISPATCHER_PORTS,required"`
 }
 
-var (
-	branch string
-	cfg    config
-)
-
 func init() {
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.ErrorLevel)
 
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatalf("%+v\n", err)
@@ -35,11 +45,16 @@ func init() {
 	}
 
 	flag.StringVar(&branch, "branch", "", "branch name")
+	flag.IntVar(&debug, "debug", 0, "enable debug")
 	flag.Parse()
+
+	if debug > 0 {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	if len(branch) == 0 {
 		log.Error("Branch name is not defined.")
-		os.Exit(1)
+		os.Exit(ExitNotSetVariabled)
 		return
 	}
 }
@@ -56,48 +71,93 @@ func main() {
 		portStart, err := strconv.Atoi(ports[0])
 		if err != nil {
 			log.Errorf("cmd: can not parse port range")
-			os.Exit(1)
+			os.Exit(ExitNotSetVariabled)
 			return
 		}
 
 		portEnd, err := strconv.Atoi(ports[1])
 		if err != nil {
 			log.Errorf("cmd: can not parse port range")
-			os.Exit(1)
+			os.Exit(ExitNotSetVariabled)
 			return
 		}
 
 		log.Debugf("Ports: %d-%d", portStart, portEnd)
 
-		// pid, _ := process.FindPidByPort(port)
-		// log.Println(process.Kill(pid))
 		repo := repository.New()
-		socket, err := repo.FindSocket(hash)
+		socket, err := repo.FindSocketHash(hash)
 		if err == nil {
-			// todo: // update time, because is usage
-
-			log.Printf("socket updated: %#v", socket)
+			log.Debugf("socket updated: %#v", socket) // is used
 			if ok := repo.Update(socket); ok {
-				println()
-				print("PORT:")
-				println(socket.Port)
-
-				// kill pid ?
+				printPort(socket.Port)
 				return
 			}
+
 			log.Error("Can not update socket row.")
-			os.Exit(2)
+			os.Exit(ExitCanNotUpdate)
 			return
 		}
 
-		repo.FindPorts(portStart, portEnd)
+		sockets, err := repo.FindSocketPorts(portStart, portEnd)
+		if err != nil {
+			log.Error("main: can not find socket for port range.")
+			os.Exit(ExitCanNotRead)
+		}
 
-		// todo: insert new
+		// find free port
+		var port int
+		if ((portEnd + 1) - portStart) > len(sockets) {
+			for i := portStart; i <= portEnd; i++ {
+				if isFreePort(i, sockets) {
+					port = i
+					log.Debugf("Free port: %d", port)
+					break
+				}
+			}
 
-		// repo.Insert(8001, hash)
+			repo.Insert(port, hash)
+			printPort(port)
+			return
+		}
+
+		if len(sockets) > 0 {
+			socket := sockets[0]
+			socket.Hash = hash
+
+			pid, _ := process.FindPidByPort(socket.Port)
+			process.Kill(pid)
+
+			if ok := sock.New(uint(socket.Port)).IsLocked(); !ok {
+				log.Error("main: can not unlock process.")
+				os.Exit(ExitCanNotUpdate)
+			}
+
+			if ok := repo.Update(socket); !ok {
+				log.Error("main: can not update socket used")
+				os.Exit(ExitCanNotUpdate)
+			}
+
+			printPort(socket.Port)
+		}
+
 		return
 	}
 
 	log.Error("cmd: Port range is not set!")
-	os.Exit(1)
+	os.Exit(ExitNotSetVariabled)
+}
+
+func printPort(port int) {
+	log.Debugf("Port: %d", port)
+	println(port)
+}
+
+func isFreePort(port int, sockets []*model.Socket) bool {
+	for _, socket := range sockets {
+		if socket.Port == port {
+			return false
+		}
+	}
+
+	return true
 }
