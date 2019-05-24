@@ -24,7 +24,8 @@ before_deploy:
 deploy:
   - provider: releases
     api_key: "$GITHUB_TOKEN"
-    file: "./bin/socket-dispatcher"
+    file: 
+        - "./bin/socket-dispatcher"
     skip_cleanup: true
     overwrite: true
     tag_name: "release-$TAG_NAME"
@@ -32,11 +33,6 @@ deploy:
     on:
         tags: true
         repo: "$TRAVIS_REPO_SLUG"
-  - provider: script
-    skip_cleanup: true
-    script: make build
-    on:
-      tags: true
 
 notifications:
   email: false

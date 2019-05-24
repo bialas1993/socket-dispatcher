@@ -27,6 +27,7 @@ const (
 var (
 	branch string
 	debug  int
+	kill   int
 	cfg    config
 )
 
@@ -45,7 +46,9 @@ func init() {
 	}
 
 	flag.StringVar(&branch, "branch", "", "branch name")
+	flag.IntVar(&kill, "kill", 0, "kill process which one use selected port")
 	flag.IntVar(&debug, "debug", 0, "enable debug")
+
 	flag.Parse()
 
 	if debug > 0 {
@@ -124,16 +127,18 @@ func main() {
 			socket := sockets[0]
 			socket.Hash = hash
 
-			pid, _ := process.FindPidByPort(socket.Port)
-			process.Kill(pid)
+			if kill > 0 {
+				pid, _ := process.FindPidByPort(socket.Port)
+				process.Kill(pid)
 
-			if ok := sock.New(uint(socket.Port)).IsLocked(); !ok {
-				log.Error("main: can not unlock process.")
-				os.Exit(ExitCanNotUpdate)
+				if ok := sock.New(uint(socket.Port)).IsLocked(); !ok {
+					log.Error("main: can not unlock process.")
+					os.Exit(ExitCanNotUpdate)
+				}
 			}
 
 			if ok := repo.Update(socket); !ok {
-				log.Error("main: can not update socket used")
+				log.Error("main: can not update socket use info")
 				os.Exit(ExitCanNotUpdate)
 			}
 
