@@ -31,7 +31,7 @@ deploy:
     tag_name: "release-$TAG_NAME"
     target_commitish: "$TRAVIS_COMMIT"
     on:
-        tags: true
+        tags: false
         repo: "$TRAVIS_REPO_SLUG"
 
 notifications:
