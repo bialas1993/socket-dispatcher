@@ -3,7 +3,7 @@
 
 ### RUN
 ```
-env SOCKET_DISPATCHER_PORTS="8000-8004" ./bin/socket-dispatcher --branch master --debug 1 --kill
+env SOCKET_DISPATCHER_PORTS="8000-8004" ./bin/socket-dispatcher --branch master --debug --kill
 ```
 
 ### options: 
