@@ -2,6 +2,8 @@ package repository
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/astaxie/beego/orm"
 	log "github.com/sirupsen/logrus"
@@ -18,11 +20,6 @@ var (
 func init() {
 	orm.RegisterModel(new(model.Socket))
 	orm.RegisterDriver("sqlite3", orm.DRSqlite)
-	err := orm.RegisterDataBase("default", "sqlite3", "file:data.db")
-	if err != nil {
-		log.Panic(err)
-	}
-	orm.RunSyncdb("default", false, false)
 
 }
 
@@ -37,7 +34,18 @@ type repo struct {
 	db orm.Ormer
 }
 
-func New() Repository {
+type config interface {
+	DatabasePath() string
+}
+
+func New(cfg config) Repository {
+	err := orm.RegisterDataBase("default", "sqlite3",
+		fmt.Sprintf("file:%s/data.db", strings.TrimRight(cfg.DatabasePath(), "/")))
+	if err != nil {
+		log.Panic(err)
+	}
+	orm.RunSyncdb("default", false, false)
+
 	return &repo{orm.NewOrm()}
 }
 
@@ -72,7 +80,7 @@ func (r *repo) FindSocketPorts(start, end int) ([]*model.Socket, error) {
 	}
 
 	if _, err := qs.Filter("port__in", ports...).OrderBy("updated").All(&data); err != nil {
-		return nil, ErrorCanNotFindRecords
+		return nil, err
 	}
 
 	return data, nil

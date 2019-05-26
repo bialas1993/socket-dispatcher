@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/caarlos0/env"
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
@@ -26,32 +27,38 @@ const (
 
 var (
 	branch string
-	debug  int
-	kill   int
+	debug  bool
+	kill   bool
 	cfg    config
 )
 
 // Config for app
 type config struct {
 	SocketDispatcherPorts string `env:"SOCKET_DISPATCHER_PORTS,required"`
+	DbPath                string `env:"DATABASE_PATH" envDefault:"."`
+}
+
+func (c config) DatabasePath() string {
+	return c.DbPath
 }
 
 func init() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.ErrorLevel)
 
+	godotenv.Load()
 	if err := env.Parse(&cfg); err != nil {
 		log.Fatalf("%+v\n", err)
 		return
 	}
 
 	flag.StringVar(&branch, "branch", "", "branch name")
-	flag.IntVar(&kill, "kill", 0, "kill process which one use selected port")
-	flag.IntVar(&debug, "debug", 0, "enable debug")
+	flag.BoolVar(&kill, "kill", false, "kill process which one use selected port")
+	flag.BoolVar(&debug, "debug", false, "enable debug")
 
 	flag.Parse()
 
-	if debug > 0 {
+	if debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
@@ -73,7 +80,7 @@ func main() {
 		ports := strings.Split(cfg.SocketDispatcherPorts, "-")
 		portStart, err := strconv.Atoi(ports[0])
 		if err != nil {
-			log.Errorf("cmd: can not parse port range")
+			log.Errorf("cmd: can not parse port range '%s'", cfg.SocketDispatcherPorts)
 			os.Exit(ExitNotSetVariabled)
 			return
 		}
@@ -87,7 +94,7 @@ func main() {
 
 		log.Debugf("Ports: %d-%d", portStart, portEnd)
 
-		repo := repository.New()
+		repo := repository.New(cfg)
 		socket, err := repo.FindSocketHash(hash)
 		if err == nil {
 			log.Debugf("socket updated: %#v", socket) // is used
@@ -103,7 +110,7 @@ func main() {
 
 		sockets, err := repo.FindSocketPorts(portStart, portEnd)
 		if err != nil {
-			log.Error("main: can not find socket for port range.")
+			log.WithError(err).Error("main: can not find socket for port range.")
 			os.Exit(ExitCanNotRead)
 		}
 
@@ -127,7 +134,7 @@ func main() {
 			socket := sockets[0]
 			socket.Hash = hash
 
-			if kill > 0 {
+			if kill {
 				pid, _ := process.FindPidByPort(socket.Port)
 				process.Kill(pid)
 

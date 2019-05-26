@@ -1,9 +1,9 @@
 default:
-	@echo "=============building Local API============="
+	@echo "============= building ============="
 	docker build -f Dockerfile -t socket-dispatcher .
 
 up: default
-	@echo "=============starting api locally============="
+	@echo "============= starting ============="
 	docker-compose up -d
 
 logs:
@@ -22,7 +22,6 @@ build:
 	go build -o ./bin/socket-dispatcher ./cmd/daemon/
 
 clean: down
-	@echo "=============cleaning up============="
-	rm -f api
+	@echo "============= cleaning up ============="
 	docker system prune -f
 	docker volume prune -f

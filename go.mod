@@ -9,6 +9,7 @@ require (
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/pelletier/go-toml v1.4.0 // indirect
