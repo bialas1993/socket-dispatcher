@@ -14,9 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	"gitlab.com/bialas1993/socket-dispatcher/pkg/model"
-	"gitlab.com/bialas1993/socket-dispatcher/pkg/process"
 	"gitlab.com/bialas1993/socket-dispatcher/pkg/repository"
-	sock "gitlab.com/bialas1993/socket-dispatcher/pkg/socket"
 )
 
 const (
@@ -133,16 +131,6 @@ func main() {
 		if len(sockets) > 0 {
 			socket := sockets[0]
 			socket.Hash = hash
-
-			if kill {
-				pid, _ := process.FindPidByPort(socket.Port)
-				process.Kill(pid)
-
-				if ok := sock.New(uint(socket.Port)).IsLocked(); !ok {
-					log.Error("main: can not unlock process.")
-					os.Exit(ExitCanNotUpdate)
-				}
-			}
 
 			if ok := repo.Update(socket); !ok {
 				log.Error("main: can not update socket use info")

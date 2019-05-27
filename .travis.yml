@@ -5,11 +5,6 @@ go: '1.12'
 
 install:
   - export GO111MODULE="on"
-  - gem install fpm
-  - npm install -g prettier
-  - sudo apt-get update
-  - sudo apt-get install --yes snapd rpm liblz4-dev
-  - export PATH=/snap/bin:$PATH
   - go mod download
   - go mod vendor
 
@@ -28,7 +23,7 @@ deploy:
         - "./bin/socket-dispatcher"
     skip_cleanup: true
     overwrite: true
-    tag_name: "release-$TAG_NAME"
+    tag_name: "v1.0.$TAG_NAME"
     target_commitish: "$TRAVIS_COMMIT"
     on:
         tags: false
