@@ -14,7 +14,7 @@ install:
   - go mod vendor
 
 script:
-  - go build -o ./bin/socket-dispatcher -i ./cmd/daemon/
+  - make build
 
 before_deploy:
    - git config --local user.name "bialas1993"

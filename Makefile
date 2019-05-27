@@ -19,7 +19,7 @@ test:
 	go test -v -cover ./...
 
 build:
-	go build -o ./bin/socket-dispatcher ./cmd/daemon/
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 go build  -ldflags "-s -w" -o ./bin/socket-dispatcher ./cmd/daemon/
 
 clean: down
 	@echo "============= cleaning up ============="
