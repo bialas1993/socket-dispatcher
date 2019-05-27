@@ -19,7 +19,7 @@ test:
 	go test -v -cover ./...
 
 build:
-	GOOS=linux GOARCH=amd64 go build  -ldflags "-s -w" -o ./bin/socket-dispatcher ./cmd/daemon/
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -ldflags "-w" -o ./bin/socket-dispatcher ./cmd/daemon/
 
 clean: down
 	@echo "============= cleaning up ============="
