@@ -19,7 +19,7 @@ test:
 	go test -v -cover ./...
 
 build:
-	CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w' -o ./bin/socket-dispatcher ./cmd/daemon/
+	CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build --ldflags '-extldflags "-static"' -ldflags ' -s -w ' -o ./bin/socket-dispatcher ./cmd/daemon/
 
 clean: down
 	@echo "============= cleaning up ============="
