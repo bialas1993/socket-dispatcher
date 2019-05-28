@@ -20,7 +20,7 @@ deploy:
   - provider: releases
     api_key: "$GITHUB_TOKEN"
     file: 
-        - "./bin/socket-dispatcher"
+        - "./dist/socket-dispatcher"
     skip_cleanup: true
     overwrite: true
     tag_name: "v1.0.$TAG_NAME"
